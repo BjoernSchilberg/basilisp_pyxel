@@ -1,0 +1,44 @@
+(import pyxel)
+(defn bline [x1 y1 x2 y2]
+  "Draw a line using Bresenham's Algorithm"
+  (let [dx (python/abs (- x2 x1))
+        dy (python/abs (- y2 y1))
+        x-step (if (< x1 x2) 1 -1)
+        y-step (if (< y1 y2) 1 -1)
+        points (atom[])
+        update-points(fn [x y] (swap! points conj [x y]))]
+    ( if (>= dx dy)
+     (loop [x x1
+            y y1
+            d (- (* 2 dy) dx)]
+       (update-points x y)
+       (if (= x x2)
+         @points
+         (recur (+ x x-step) ;; x
+                (if (pos? d) (+ y y-step) y) ;; y
+                (if (pos? d) ;; d
+                (+ d (* 2 (- dy dx))) 
+                  (+ d (* 2 dy) )))))
+     (loop [x x1
+            y y1 
+            d (- (* 2 dx) dy)]
+       (update-points x y)
+       (if (= y y2)
+         @points
+         (recur
+          (if (pos? d) (+ x x-step) x) ;; x
+          (+ y y-step) ;; y 
+         (if (pos? d) 
+           (+ d (* 2 (- dx dy))) 
+           (+ d (* 2 dx))))))))
+           ) ;; d
+(defn draw-line [x1 y1 x2 y2 color]
+  (let [points (bline x1 y1 x2 y2)]
+    (doseq [[x y] points]
+    (pyxel/pset x y color))))
+(def width 500)
+(def height 100)
+(pyxel/init width height)
+(pyxel/cls 5)
+(draw-line 10 10 400 90 11)
+(pyxel/show)
